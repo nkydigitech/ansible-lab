@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ansible Lab Guide | Nkydigitech</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #00d4aa;
+      --primary-dark: #00a884;
+      --secondary: #6c63ff;
+      --accent: #ff6b6b;
+      --bg: #0a0e1a;
+      --bg2: #0f1629;
+      --bg3: #151d35;
+      --card: #1a2340;
+      --card2: #1f2a4a;
+      --text: #e8eaf6;
+      --text-muted: #8892b0;
+      --border: #2a3a5c;
+      --code-bg: #0d1117;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED BACKGROUND ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .bg-glow {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,212,170,0.12), transparent),
+                  radial-gradient(ellipse 60% 40% at 90% 80%, rgba(108,99,255,0.08), transparent);
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 3rem;
+      background: rgba(10,14,26,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 1.2rem; font-weight: 800; color: var(--primary);
+      text-decoration: none;
+    }
+    .nav-logo .dot { color: var(--text); font-weight: 300; }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-badge {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #000; font-size: 0.75rem; font-weight: 700;
+      padding: 0.4rem 1rem; border-radius: 50px;
+      text-decoration: none;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3);
+      color: var(--primary); font-size: 0.8rem; font-weight: 600;
+      padding: 0.4rem 1rem; border-radius: 50px;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.6s ease;
+    }
+    .hero-badge .pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 900; line-height: 1.05;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.7s ease 0.1s both;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-muted); max-width: 600px;
+      line-height: 1.7; margin-bottom: 3rem;
+      animation: fadeInUp 0.7s ease 0.2s both;
+    }
+    .hero-buttons {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      animation: fadeInUp 0.7s ease 0.3s both;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #000; font-weight: 700; font-size: 1rem;
+      padding: 0.9rem 2rem; border-radius: 12px;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(0,212,170,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(0,212,170,0.5); }
+    .btn-secondary {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); font-weight: 600; font-size: 1rem;
+      padding: 0.9rem 2rem; border-radius: 12px;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--primary); background: rgba(0,212,170,0.05); }
+
+    /* stats strip */
+    .stats-strip {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap;
+      padding: 2.5rem 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(15,22,41,0.6);
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* ── SECTION BASE ── */
+    section { position: relative; z-index: 1; padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      display: inline-block;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800; line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      color: var(--text-muted); font-size: 1.05rem;
+      line-height: 1.7; max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    /* ── MODULES / CURRICULUM ── */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .module-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.75rem;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      cursor: default;
+    }
+    .module-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 8px 40px rgba(0,212,170,0.1);
+    }
+    .module-num {
+      font-size: 0.75rem; font-weight: 700; color: var(--primary);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .module-title {
+      font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;
+    }
+    .module-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
+    .module-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .tag {
+      background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2);
+      color: var(--primary); font-size: 0.72rem; font-weight: 600;
+      padding: 0.2rem 0.6rem; border-radius: 6px;
+    }
+
+    /* ── LAB EXERCISES ── */
+    .labs-grid {
+      display: grid; gap: 2rem;
+    }
+    .lab-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .lab-card:hover { border-color: var(--secondary); }
+    .lab-header {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1.5rem 1.75rem;
+      background: var(--card2); border-bottom: 1px solid var(--border);
+    }
+    .lab-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .lab-icon.green { background: rgba(0,212,170,0.15); }
+    .lab-icon.purple { background: rgba(108,99,255,0.15); }
+    .lab-icon.red { background: rgba(255,107,107,0.15); }
+    .lab-icon.blue { background: rgba(64,169,255,0.15); }
+    .lab-meta { flex: 1; }
+    .lab-title { font-size: 1.1rem; font-weight: 700; }
+    .lab-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem; }
+    .lab-difficulty {
+      font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 6px;
+    }
+    .diff-beginner { background: rgba(0,212,170,0.15); color: var(--primary); }
+    .diff-intermediate { background: rgba(255,193,7,0.15); color: #ffc107; }
+    .diff-advanced { background: rgba(255,107,107,0.15); color: var(--accent); }
+    .lab-body { padding: 1.75rem; }
+    .lab-objective {
+      font-size: 0.9rem; color: var(--text-muted);
+      line-height: 1.6; margin-bottom: 1.25rem;
+    }
+    .steps-title {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .steps { display: flex; flex-direction: column; gap: 0.6rem; }
+    .step {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      font-size: 0.9rem; line-height: 1.5;
+    }
+    .step-num {
+      min-width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.3);
+      color: var(--primary); font-size: 0.72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 0.1rem;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.25rem 1.5rem; margin: 1rem 0;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem; line-height: 1.7;
+      color: #abb2bf;
+    }
+    .code-block .kw { color: #c678dd; }
+    .code-block .str { color: #98c379; }
+    .code-block .cm { color: #5c6370; font-style: italic; }
+    .code-block .num { color: #d19a66; }
+    .code-block .key { color: #61afef; }
+    .code-lang {
+      position: absolute; top: 0.75rem; right: 1rem;
+      font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── CHEATSHEET ── */
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .cheat-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden;
+    }
+    .cheat-header {
+      padding: 1rem 1.25rem;
+      background: var(--card2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .cheat-header span { color: var(--primary); }
+    .cheat-body { padding: 1rem 1.25rem; }
+    .cheat-cmd {
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .cmd-row {
+      background: var(--code-bg); border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem; color: var(--primary);
+    }
+    .cmd-desc {
+      font-size: 0.78rem; color: var(--text-muted);
+      margin-top: 0.15rem; padding: 0 0.75rem;
+    }
+
+    /* ── CONCEPT CARDS ── */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+    .concept-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.5rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .concept-card:hover { transform: translateY(-3px); border-color: var(--secondary); }
+    .concept-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .concept-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .concept-def { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; }
+
+    /* ── ABOUT ── */
+    .about-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 3rem; display: flex; gap: 3rem; align-items: center;
+      flex-wrap: wrap;
+    }
+    .about-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; font-weight: 800; color: #000; flex-shrink: 0;
+    }
+    .about-content { flex: 1; min-width: 250px; }
+    .about-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .about-role { color: var(--primary); font-weight: 600; margin-bottom: 1rem; }
+    .about-bio { color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
+    .about-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .about-link {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--card2); border: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .about-link:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.875rem;
+    }
+    footer strong { color: var(--primary); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 60px; height: 4px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      margin: 1rem 0 2rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .stats-strip { gap: 2rem; }
+      .about-card { flex-direction: column; text-align: center; }
+      .about-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">⚡ Nkydigitech<span class="dot"> / Ansible Lab</span></a>
+  <div class="nav-links">
+    <a href="#curriculum">Curriculum</a>
+    <a href="#labs">Labs</a>
+    <a href="#cheatsheet">Cheatsheet</a>
+    <a href="#concepts">Concepts</a>
+    <a href="#about">About</a>
+  </div>
+  <a class="nav-badge" href="https://github.com/nkydigitech/ansible_practical" target="_blank">View on GitHub →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="pulse"></div>
+    Free Ansible Student Lab — Open Source
+  </div>
+  <h1>
+    Master Ansible.<br/>
+    <span class="gradient">Automate Everything.</span>
+  </h1>
+  <p>
+    A complete, hands-on Ansible lab guide for DevOps students.
+    Learn infrastructure automation from zero to production-ready — with real exercises, code examples, and best practices.
+  </p>
+  <div class="hero-buttons">
+    <a class="btn-primary" href="#labs">Start Learning →</a>
+    <a class="btn-secondary" href="https://github.com/nkydigitech/ansible_practical" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.929.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.69.825.572C20.565 21.795 24 17.298 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub Repo
+    </a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat"><div class="stat-num">5</div><div class="stat-label">Core Modules</div></div>
+  <div class="stat"><div class="stat-num">4</div><div class="stat-label">Hands-on Labs</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Ansible Roles</div></div>
+  <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Free & Open Source</div></div>
+</div>
+
+<!-- CURRICULUM -->
+<section id="curriculum">
+  <div class="container">
+    <div class="section-label">📚 Curriculum</div>
+    <h2 class="section-title">What You'll Learn</h2>
+    <div class="divider"></div>
+    <p class="section-sub">A structured learning path from Ansible fundamentals to production-grade infrastructure automation.</p>
+    <div class="modules-grid">
+      <div class="module-card">
+        <div class="module-num">Module 01</div>
+        <div class="module-title">Ansible Fundamentals</div>
+        <div class="module-desc">Understand the control node, managed nodes, SSH authentication, and the agentless architecture that makes Ansible unique.</div>
+        <div class="module-tags"><span class="tag">Control Node</span><span class="tag">SSH</span><span class="tag">Inventory</span></div>
+      </div>
+      <div class="module-card">
+        <div class="module-num">Module 02</div>
+        <div class="module-title">Playbooks & Variables</div>
+        <div class="module-desc">Write declarative YAML playbooks, use Jinja2 templating for dynamic values, and manage variables across playbooks, files, and inventory.</div>
+        <div class="module-tags"><span class="tag">YAML</span><span class="tag">Jinja2</span><span class="tag">Variables</span></div>
+      </div>
+      <div class="module-card">
+        <div class="module-num">Module 03</div>
+        <div class="module-title">Roles & Project Structure</div>
+        <div class="module-desc">Organise playbooks into reusable roles with dedicated tasks, handlers, templates, and variable directories following best practices.</div>
+        <div class="module-tags"><span class="tag">Roles</span><span class="tag">Handlers</span><span class="tag">Templates</span></div>
+      </div>
+      <div class="module-card">
+        <div class="module-num">Module 04</div>
+        <div class="module-title">Ansible Vault & Security</div>
+        <div class="module-desc">Encrypt sensitive credentials using Ansible Vault with AES-256. Learn the golden rule: never commit plain text passwords to version control.</div>
+        <div class="module-tags"><span class="tag">Vault</span><span class="tag">AES-256</span><span class="tag">Security</span></div>
+      </div>
+      <div class="module-card">
+        <div class="module-num">Module 05</div>
+        <div class="module-title">Galaxy & Dynamic Inventory</div>
+        <div class="module-desc">Leverage Ansible Galaxy for community roles and configure dynamic inventory for cloud environments where servers scale automatically.</div>
+        <div class="module-tags"><span class="tag">Galaxy</span><span class="tag">AWS</span><span class="tag">Dynamic Inventory</span></div>
+      </div>
+      <div class="module-card" style="border-color: rgba(0,212,170,0.4); background: rgba(0,212,170,0.04);">
+        <div class="module-num" style="color: var(--secondary);">Bonus</div>
+        <div class="module-title">Idempotency Deep Dive</div>
+        <div class="module-desc">Understand why "desired state" thinking is the superpower that separates Ansible from bash scripts. Run playbooks 100 times safely.</div>
+        <div class="module-tags"><span class="tag" style="color:var(--secondary); border-color:rgba(108,99,255,0.3); background:rgba(108,99,255,0.1);">Idempotency</span><span class="tag" style="color:var(--secondary); border-color:rgba(108,99,255,0.3); background:rgba(108,99,255,0.1);">Best Practices</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LABS -->
+<section id="labs" style="background: rgba(15,22,41,0.5);">
+  <div class="container">
+    <div class="section-label">🧪 Hands-on Labs</div>
+    <h2 class="section-title">Real-World Exercises</h2>
+    <div class="divider"></div>
+    <p class="section-sub">Work through these lab exercises in GitHub Codespaces or any Linux environment. Each lab builds on the last.</p>
+
+    <div class="labs-grid">
+
+      <!-- Lab 1 -->
+      <div class="lab-card">
+        <div class="lab-header">
+          <div class="lab-icon green">🖥️</div>
+          <div class="lab-meta">
+            <div class="lab-title">Lab 1 — Your First Playbook</div>
+            <div class="lab-subtitle">Install and manage Nginx on a local host</div>
+          </div>
+          <span class="lab-difficulty diff-beginner">Beginner</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-objective">
+            <strong>Objective:</strong> Write a playbook that installs Nginx, ensures it's running, and demonstrates idempotency by running it twice.
+          </div>
+          <div class="code-block">
+            <span class="code-lang">yaml</span>
+            <pre><span class="cm">---</span>
+<span class="key">- name</span>: <span class="str">Install and start Nginx</span>
+  <span class="key">hosts</span>: <span class="str">localhost</span>
+  <span class="key">become</span>: <span class="kw">yes</span>
+  <span class="key">tasks</span>:
+    - <span class="key">name</span>: <span class="str">Install nginx</span>
+      <span class="key">apt</span>:
+        <span class="key">name</span>: <span class="str">nginx</span>
+        <span class="key">state</span>: <span class="str">present</span>
+    - <span class="key">name</span>: <span class="str">Start nginx service</span>
+      <span class="key">service</span>:
+        <span class="key">name</span>: <span class="str">nginx</span>
+        <span class="key">state</span>: <span class="str">started</span>
+        <span class="key">enabled</span>: <span class="kw">yes</span></pre>
+          </div>
+          <div class="steps-title">Steps</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><span>Create a file called <code>webserver.yml</code> and paste the playbook above</span></div>
+            <div class="step"><div class="step-num">2</div><span>Run: <code>ansible-playbook webserver.yml</code> — note <em>changed=1</em></span></div>
+            <div class="step"><div class="step-num">3</div><span>Run it again — what does <em>changed=0</em> tell you? That's idempotency!</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab 2 -->
+      <div class="lab-card">
+        <div class="lab-header">
+          <div class="lab-icon purple">📁</div>
+          <div class="lab-meta">
+            <div class="lab-title">Lab 2 — Multi-Role Project</div>
+            <div class="lab-subtitle">Build a webserver + mysql + app role structure</div>
+          </div>
+          <span class="lab-difficulty diff-intermediate">Intermediate</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-objective">
+            <strong>Objective:</strong> Create a full project with three separate roles — webserver (Nginx), mysql (database), and app (deployment) — each with its own tasks directory.
+          </div>
+          <div class="code-block">
+            <span class="code-lang">bash</span>
+            <pre><span class="cm"># Create the role structure</span>
+mkdir -p roles/{webserver,mysql,app}/tasks
+mkdir -p roles/mysql/vars
+
+<span class="cm"># Create the main playbook</span>
+touch playbook.yml inventory.ini
+
+<span class="cm"># Verify structure</span>
+tree roles/</pre>
+          </div>
+          <div class="steps-title">Steps</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><span>Create the directory structure using the commands above</span></div>
+            <div class="step"><div class="step-num">2</div><span>Write tasks in each role's <code>main.yml</code></span></div>
+            <div class="step"><div class="step-num">3</div><span>Reference all three roles in your <code>playbook.yml</code></span></div>
+            <div class="step"><div class="step-num">4</div><span>Run the playbook and verify all tasks complete successfully</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab 3 -->
+      <div class="lab-card">
+        <div class="lab-header">
+          <div class="lab-icon red">🔐</div>
+          <div class="lab-meta">
+            <div class="lab-title">Lab 3 — Ansible Vault</div>
+            <div class="lab-subtitle">Encrypt database credentials with AES-256</div>
+          </div>
+          <span class="lab-difficulty diff-intermediate">Intermediate</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-objective">
+            <strong>Objective:</strong> Create a secrets file with database credentials, encrypt it with Ansible Vault, and configure your MySQL role to load it securely using <code>include_vars</code>.
+          </div>
+          <div class="code-block">
+            <span class="code-lang">bash</span>
+            <pre><span class="cm"># Create secrets file</span>
+cat > roles/mysql/vars/secrets.yml << EOF
+db_name: appdb
+db_user: appuser
+db_password: SuperSecret123!
+EOF
+
+<span class="cm"># Encrypt it</span>
+ansible-vault encrypt roles/mysql/vars/secrets.yml
+
+<span class="cm"># Run playbook with vault</span>
+ansible-playbook -i inventory.ini playbook.yml \
+  --ask-vault-pass</pre>
+          </div>
+          <div class="steps-title">Steps</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><span>Create <code>secrets.yml</code> with plain text credentials</span></div>
+            <div class="step"><div class="step-num">2</div><span>Run <code>ansible-vault encrypt</code> on the file</span></div>
+            <div class="step"><div class="step-num">3</div><span>Add <code>include_vars: vars/secrets.yml</code> to your MySQL tasks</span></div>
+            <div class="step"><div class="step-num">4</div><span>Run with <code>--ask-vault-pass</code> and confirm it works</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab 4 -->
+      <div class="lab-card">
+        <div class="lab-header">
+          <div class="lab-icon blue">🌐</div>
+          <div class="lab-meta">
+            <div class="lab-title">Lab 4 — Ansible Galaxy</div>
+            <div class="lab-subtitle">Use community roles for production-grade setup</div>
+          </div>
+          <span class="lab-difficulty diff-advanced">Advanced</span>
+        </div>
+        <div class="lab-body">
+          <div class="lab-objective">
+            <strong>Objective:</strong> Create a <code>requirements.yml</code> file, install a Galaxy role from Jeff Geerling, and use it in your playbook instead of your custom Nginx role.
+          </div>
+          <div class="code-block">
+            <span class="code-lang">yaml</span>
+            <pre><span class="cm"># requirements.yml</span>
+<span class="key">roles</span>:
+  - <span class="key">name</span>: <span class="str">geerlingguy.nginx</span>
+  - <span class="key">name</span>: <span class="str">geerlingguy.mysql</span></pre>
+          </div>
+          <div class="code-block">
+            <span class="code-lang">bash</span>
+            <pre><span class="cm"># Install all roles at once</span>
+ansible-galaxy install -r requirements.yml</pre>
+          </div>
+          <div class="steps-title">Steps</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><span>Create <code>requirements.yml</code> with the roles above</span></div>
+            <div class="step"><div class="step-num">2</div><span>Install with <code>ansible-galaxy install -r requirements.yml</code></span></div>
+            <div class="step"><div class="step-num">3</div><span>Update your playbook to reference the Galaxy roles</span></div>
+            <div class="step"><div class="step-num">4</div><span>Compare the Galaxy role with your custom one — what extra features does it have?</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CHEATSHEET -->
+<section id="cheatsheet">
+  <div class="container">
+    <div class="section-label">📋 Cheatsheet</div>
+    <h2 class="section-title">Quick Reference</h2>
+    <div class="divider"></div>
+    <p class="section-sub">The most important Ansible commands you'll use every day.</p>
+    <div class="cheat-grid">
+      <div class="cheat-card">
+        <div class="cheat-header"><span>▶</span> Running Playbooks</div>
+        <div class="cheat-body">
+          <div class="cheat-cmd">
+            <div class="cmd-row">ansible-playbook playbook.yml</div>
+            <div class="cmd-desc">Run a playbook against inventory</div>
+            <div class="cmd-row">ansible-playbook playbook.yml --check</div>
+            <div class="cmd-desc">Dry run — no changes made</div>
+            <div class="cmd-row">ansible-playbook playbook.yml -v</div>
+            <div class="cmd-desc">Verbose output for debugging</div>
+            <div class="cmd-row">ansible-playbook playbook.yml --ask-vault-pass</div>
+            <div class="cmd-desc">Run with encrypted vault files</div>
+          </div>
+        </div>
+      </div>
+      <div class="cheat-card">
+        <div class="cheat-header"><span>🔐</span> Ansible Vault</div>
+        <div class="cheat-body">
+          <div class="cheat-cmd">
+            <div class="cmd-row">ansible-vault encrypt file.yml</div>
+            <div class="cmd-desc">Encrypt a file</div>
+            <div class="cmd-row">ansible-vault decrypt file.yml</div>
+            <div class="cmd-desc">Decrypt a file (use carefully!)</div>
+            <div class="cmd-row">ansible-vault edit file.yml</div>
+            <div class="cmd-desc">Edit an encrypted file safely</div>
+            <div class="cmd-row">ansible-vault view file.yml</div>
+            <div class="cmd-desc">View encrypted content</div>
+          </div>
+        </div>
+      </div>
+      <div class="cheat-card">
+        <div class="cheat-header"><span>🌐</span> Ansible Galaxy</div>
+        <div class="cheat-body">
+          <div class="cheat-cmd">
+            <div class="cmd-row">ansible-galaxy install role.name</div>
+            <div class="cmd-desc">Install a single role</div>
+            <div class="cmd-row">ansible-galaxy install -r requirements.yml</div>
+            <div class="cmd-desc">Install all roles from file</div>
+            <div class="cmd-row">ansible-galaxy list</div>
+            <div class="cmd-desc">List installed roles</div>
+            <div class="cmd-row">ansible-galaxy init my_role</div>
+            <div class="cmd-desc">Scaffold a new role structure</div>
+          </div>
+        </div>
+      </div>
+      <div class="cheat-card">
+        <div class="cheat-header"><span>🗃️</span> Inventory & Hosts</div>
+        <div class="cheat-body">
+          <div class="cheat-cmd">
+            <div class="cmd-row">ansible all -i inventory.ini -m ping</div>
+            <div class="cmd-desc">Ping all hosts</div>
+            <div class="cmd-row">ansible-inventory --list</div>
+            <div class="cmd-desc">List all inventory hosts</div>
+            <div class="cmd-row">ansible webservers -m command -a "uptime"</div>
+            <div class="cmd-desc">Run ad-hoc command on group</div>
+            <div class="cmd-row">ansible all -m setup</div>
+            <div class="cmd-desc">Gather facts from all hosts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY CONCEPTS -->
+<section id="concepts" style="background: rgba(15,22,41,0.5);">
+  <div class="container">
+    <div class="section-label">💡 Key Concepts</div>
+    <h2 class="section-title">Core Concepts Explained</h2>
+    <div class="divider"></div>
+    <div class="concepts-grid">
+      <div class="concept-card">
+        <div class="concept-icon">🔄</div>
+        <div class="concept-name">Idempotency</div>
+        <div class="concept-def">Running the same playbook multiple times produces the same result. Ansible checks "what should the state be?" not "what should I do?" — changed=0 is the goal.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">📦</div>
+        <div class="concept-name">Roles</div>
+        <div class="concept-def">Reusable units of automation. Each role owns a specific part of your infrastructure — webserver, database, app — with its own tasks, vars, handlers and templates.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">🗂️</div>
+        <div class="concept-name">Inventory</div>
+        <div class="concept-def">The list of servers Ansible manages. Can be static (.ini files) for fixed infrastructure or dynamic (cloud APIs) for auto-scaling environments.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">📝</div>
+        <div class="concept-name">Playbooks</div>
+        <div class="concept-def">YAML files that declare the desired state of your infrastructure. They define which tasks run on which hosts — the heart of all Ansible automation.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">🔔</div>
+        <div class="concept-name">Handlers</div>
+        <div class="concept-def">Tasks that only run when notified by another task. Perfect for restarting services only when a config file actually changed — not on every run.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">🔐</div>
+        <div class="concept-name">Ansible Vault</div>
+        <div class="concept-def">AES-256 encryption for sensitive data. Passwords, API keys, and tokens are encrypted at rest — the golden rule: never commit plain text secrets to Git.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">🌐</div>
+        <div class="concept-name">Ansible Galaxy</div>
+        <div class="concept-def">The public marketplace for Ansible roles. Like npm for Node.js — download battle-tested roles for Nginx, MySQL, Docker instead of writing them from scratch.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">⚙️</div>
+        <div class="concept-name">Modules</div>
+        <div class="concept-def">The building blocks of Ansible tasks. apt, yum, service, copy, file, template — each module handles one specific operation on the managed node.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="section-label">👩🏽‍💻 About the Instructor</div>
+    <h2 class="section-title">Meet Your Teacher</h2>
+    <div class="divider"></div>
+    <div class="about-card">
+      <div class="about-avatar">N</div>
+      <div class="about-content">
+        <div class="about-name">Nkechi Anna Ahanonye</div>
+        <div class="about-role">DevOps Engineer & Educator · Nkydigitech</div>
+        <div class="about-bio">
+          DevOps practitioner passionate about infrastructure automation and making complex engineering concepts accessible to everyone. 
+          Completed a full Ansible Masterclass covering playbooks, roles, vault, galaxy, and dynamic inventory — and now teaching the next generation of DevOps engineers across Africa.
+        </div>
+        <div class="about-links">
+          <a class="about-link" href="https://www.linkedin.com/in/nkechi-anna-ahanonye" target="_blank">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
+          </a>
+          <a class="about-link" href="https://github.com/nkydigitech" target="_blank">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.929.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.69.825.572C20.565 21.795 24 17.298 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+          <a class="about-link" href="https://github.com/nkydigitech/ansible_practical" target="_blank">
+            📦 ansible_practical repo
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Built with ❤️ by <strong>Nkechi Anna Ahanonye</strong> · Nkydigitech · Open source & free forever</p>
+  <p style="margin-top:0.5rem;">Share this with every DevOps student you know 🚀</p>
+</footer>
+
+</body>
+</html>
